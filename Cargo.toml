@@ -1,0 +1,11 @@
+[package]
+name = "weatherstation"
+version = "0.1.0"
+authors = ["Stefan Tatschner <stefan.tatschner@gmail.com"]
+
+[dependencies]
+time = "0.1"
+clap = "~2.27.0"
+
+[dev-dependencies]
+tempdir = "0.3"
