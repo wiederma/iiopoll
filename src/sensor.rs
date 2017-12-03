@@ -5,6 +5,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use time;
 use time::Timespec;
+use std::io::{Seek, SeekFrom};
 
 const TEMPERATURE_FILE: &str = "in_temp_input";
 const HUMIDITY_RELATIVE_FILE: &str = "in_humidityrelative_input";
@@ -70,6 +71,7 @@ impl SensorNode {
     fn temperature(&mut self) -> Option<String> {
         if let Some(ref mut fd) = self.temp_endpoint {
             let mut buf = String::new();
+            fd.seek(SeekFrom::Start(0));
             let ret = match fd.read_to_string(&mut buf) {
                 Ok(_) => Some(buf.trim().to_string()),
                 Err(_) => None,
@@ -84,6 +86,7 @@ impl SensorNode {
     fn humidity_relative(&mut self) -> Option<String> {
         if let Some(ref mut fd) = self.humidity_rel_endpoint {
             let mut buf = String::new();
+            fd.seek(SeekFrom::Start(0));
             let ret = match fd.read_to_string(&mut buf) {
                 Ok(_) => Some(buf.trim().to_string()),
                 Err(_) => None,
@@ -98,6 +101,7 @@ impl SensorNode {
     fn pressure(&mut self) -> Option<String> {
         if let Some(ref mut fd) = self.pressure_endpoint {
             let mut buf = String::new();
+            fd.seek(SeekFrom::Start(0));
             let ret = match fd.read_to_string(&mut buf) {
                 Ok(_) => Some(buf.trim().to_string()),
                 Err(_) => None,
