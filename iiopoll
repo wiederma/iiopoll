@@ -73,8 +73,8 @@ class SensorNode:
         }
 
     @classmethod
-    def enumerate(cls):
-        return [cls(n) for n in cls.IIO_BASEPATH.iterdir() if n.is_dir()]
+    def enumerate(cls, loc=None):
+        return [cls(n, loc) for n in cls.IIO_BASEPATH.iterdir() if n.is_dir()]
 
 
 def main():
@@ -85,9 +85,14 @@ def main():
         default=1.0,
         help='Set scan interval in seconds',
     )
+    parser.add_argument(
+        '-l',
+        type=str,
+        help='Set location of this iiopoll node. Appears in json output.',
+    )
     args = parser.parse_args()
 
-    nodes = SensorNode.enumerate()
+    nodes = SensorNode.enumerate(args.l)
 
     while True:
         for node in nodes:
