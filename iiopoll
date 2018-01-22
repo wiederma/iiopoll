@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import time
+import sys
+from datetime import datetime
+from pathlib import Path
+
+
+class SensorNode:
+    IIO_BASEPATH = Path('/sys/bus/iio/devices')
+
+    def __init__(self, path, location=None):
+        self.path = Path(path)
+        with self.path.joinpath('name').open() as f:
+            self.name = f.read().strip()
+
+        self._temp_endpoint = self.path.joinpath('in_temp_input')
+        self._humidityrelative_endpoint = self.path.joinpath('in_humidityrelative_input')
+        self._pressure_endpoint = self.path.joinpath('in_pressure_input')
+
+        with open('/etc/hostname') as f:
+            self.hostname = f.read().strip()
+
+        self.location = location
+        # Some sensors are a bit shitty...
+        self.retry_interval = 0.5
+        self.retries = 6
+
+    def _read_endpoint(self, ep):
+        for i in range(self.retries):
+            try:
+                with ep.open() as f:
+                    return f.read().strip()
+            except Exception as e:
+                print(e, file=sys.stdout)
+                time.sleep(self.retry_interval)
+        else:
+            print('Retries failed', file=sys.stdout)
+            raise OSError('The sensor is bullshit!')
+
+    @property
+    def temperature(self):
+        if not self._temp_endpoint.exists():
+            return None
+
+        return self._read_endpoint(self._temp_endpoint)
+
+    @property
+    def humidity_relative(self):
+        if not self._humidityrelative_endpoint.exists():
+            return None
+
+        return self._read_endpoint(self._humidityrelative_endpoint)
+
+    @property
+    def pressure(self):
+        if not self._pressure_endpoint.exists():
+            return None
+
+        return self._read_endpoint(self._pressure_endpoint)
+
+    def do_measurement(self):
+        return {
+            'sensor': self.name,
+            'host': self.hostname,
+            'location': self.location,
+            'time': datetime.now().isoformat(),
+            'temperature': self.temperature,
+            'humidity_relative': self.humidity_relative,
+            'pressure': self.pressure,
+        }
+
+    @classmethod
+    def enumerate(cls):
+        return [cls(n) for n in cls.IIO_BASEPATH.iterdir() if n.is_dir()]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-t',
+        type=float,
+        default=1.0,
+        help='Set scan interval in seconds',
+    )
+    args = parser.parse_args()
+
+    nodes = SensorNode.enumerate()
+
+    while True:
+        for node in nodes:
+            try:
+                print(json.dumps(node.do_measurement()))
+            except OSError:
+                print('Could not get data this time...', file=sys.stderr)
+                continue
+
+        time.sleep(args.t)
+
+
+if __name__ == '__main__':
+    main()
