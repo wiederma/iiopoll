@@ -108,5 +108,5 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    exec KeyboardInterrupt:
+    except KeyboardInterrupt:
         print('Shutting down', file=sys.stderr)
