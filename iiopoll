@@ -83,11 +83,13 @@ def main():
         '-t',
         type=float,
         default=1.0,
+        metavar='TIME',
         help='Set scan interval in seconds',
     )
     parser.add_argument(
         '-l',
         type=str,
+        metavar='LOCATION',
         help='Set location of this iiopoll node. Appears in json output.',
     )
     args = parser.parse_args()
