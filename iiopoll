@@ -34,10 +34,10 @@ class SensorNode:
                 with ep.open() as f:
                     return f.read().strip()
             except Exception as e:
-                print(e, file=sys.stdout)
+                print(e, file=sys.stderr)
                 time.sleep(self.retry_interval)
         else:
-            print('Retries failed', file=sys.stdout)
+            print('Retries failed', file=sys.stderr)
             raise OSError('The sensor is bullshit!')
 
     @property
