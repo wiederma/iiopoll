@@ -100,6 +100,7 @@ def main():
         for node in nodes:
             try:
                 print(json.dumps(node.do_measurement()))
+                sys.stdout.flush()
             except OSError:
                 print('Could not get data this time...', file=sys.stderr)
                 continue
